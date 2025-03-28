@@ -25,11 +25,11 @@ class Vel:
 
 class DWA:
     def __init__(self, final_x, final_y, 
-                 vx_min: float=500, vx_max: float=2500.0, 
-                 dx_min: float=0, dx_max: float=50.0, 
+                 vx_min: float=800, vx_max: float=1400.0, 
+                 dx_min: float=0, dx_max: float=10.0, 
                  vw_max: float=2, 
                  dw_max: float=2, 
-                 dt=0.2, simt=0.8, res=10):
+                 dt=0.4, simt=1.3, res=10):
         self.obstacles_history = []  # 障碍物历史
         self.obstacles = []  # 障碍物
         self.obstacles_predict = []  # 障碍物预测
@@ -47,8 +47,8 @@ class DWA:
         self.final_x = final_x
         self.final_y = final_y
         self.start = None
-        self.reach_dist = 800
-        self.dangerous_dist = 300
+        self.reach_dist = 2000
+        self.dangerous_dist = 500
         # simulation config
         self.dt = dt
         self.simt = simt
@@ -88,12 +88,12 @@ class DWA:
 
                 
                 for i in range(3):
-                    self.obstacles_predict.append(Pos(obs.x, obs.y + (i-1) * 100, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x - 110, obs.y, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x + 110, obs.y, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x - 110, obs.y + signy * 1500 / 3, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x + 110, obs.y + signy * 1500 / 3, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x, obs.y + signy * 2 * 1500 / 3, obs.theta))
+                    self.obstacles_predict.append(Pos(obs.x, obs.y + (i-1) * 140, obs.theta))
+                    self.obstacles_predict.append(Pos(obs.x - 140, obs.y, obs.theta))
+                    self.obstacles_predict.append(Pos(obs.x + 140, obs.y, obs.theta))
+                    #self.obstacles_predict.append(Pos(obs.x - 110, obs.y + signy * 1500 / 3, obs.theta))
+                    #self.obstacles_predict.append(Pos(obs.x + 110, obs.y + signy * 1500 / 3, obs.theta))
+                    #self.obstacles_predict.append(Pos(obs.x, obs.y + signy * 2 * 1500 / 3, obs.theta))
 
         for robot in vision.yellow_robot:
             if robot.id in [6, 9, 12]:
@@ -102,28 +102,30 @@ class DWA:
         if time_interval > 0:
             for obs, obs_histroy in zip(self.obstacles, self.obstacles_history):
                 
-                vx = (obs.x - obs_histroy.x) / time_interval
-                signx = np.sign(vx)
-                vy = (obs.y - obs_histroy.y) / time_interval
-                signy = np.sign(vy)
+                #vx = (obs.x - obs_histroy.x) / time_interval
+                #signx = np.sign(vx)
+                #vy = (obs.y - obs_histroy.y) / time_interval
+                #signy = np.sign(vy)
 
                 
                 for i in range(3):
-                    self.obstacles_predict.append(Pos(obs.x, obs.y + (i-1) * 100, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x - 110, obs.y, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x + 110, obs.y, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x - 110, obs.y + signy * 1500 / 3, obs.theta))
-                    self.obstacles_predict.append(Pos(obs.x + 110, obs.y + signy * 1500 / 3, obs.theta))
+                    self.obstacles_predict.append(Pos(obs.x, obs.y + (i-1) * 140, obs.theta))
+                    self.obstacles_predict.append(Pos(obs.x - 140, obs.y, obs.theta))
+                    self.obstacles_predict.append(Pos(obs.x + 140, obs.y, obs.theta))
+                    #self.obstacles_predict.append(Pos(obs.x - 110, obs.y + signy * 1500 / 3, obs.theta))
+                    #self.obstacles_predict.append(Pos(obs.x + 110, obs.y + signy * 1500 / 3, obs.theta))
 
         for robot in vision.yellow_robot:
             if robot.id not in [3,4,6,9,12]:
                 self.obstacles.append(Pos(robot.x, robot.y, robot.orientation))
 
+        self.obstacles_predict += self.obstacles
+
         return self.obstacles_predict
             
     def if_reach_target(self):  
         if self.target.x == self.final_x and self.target.y == self.final_y:
-            if sqrt(pow(self.target.x - self.pos.x, 2) + pow(self.target.y - self.pos.y, 2)) < 100:
+            if sqrt(pow(self.target.x - self.pos.x, 2) + pow(self.target.y - self.pos.y, 2)) < 130:
                 return True
         elif sqrt(pow(self.target.x - self.pos.x, 2) + pow(self.target.y - self.pos.y, 2)) < self.reach_dist:
             return True
@@ -221,7 +223,7 @@ class DWA:
                 vel_score = vx_iter / self.vx_range.max
                 
                 # sum up
-                score = 0 * heading_score + 50 * dist_score + 0.01 * vel_score + 20 * target_score
+                score = 0.001 * heading_score + 50 * dist_score + 0.01 * vel_score + 20 * target_score
                 if score > final_score:
                     
                     # print(heading_score)
